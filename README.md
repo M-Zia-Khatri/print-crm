@@ -13,13 +13,22 @@ Production-ready Laravel, Inertia, React, TypeScript, MySQL, and Redis CRM found
 
 ## Development
 
-Docker runs infrastructure only. Run PHP, Composer, pnpm, Laravel, and Vite on your host.
+Docker runs infrastructure only. Run PHP, Composer, pnpm, Laravel, and Vite on your host. The default `.env.example` uses SQLite so migrations work even when `pdo_mysql` is not installed yet. For MySQL development, enable PHP `pdo_mysql`, then use `.env.development`.
 
 ```bash
+cp .env.example .env
+make install
+make doctor
+php artisan key:generate
+php artisan migrate
+make dev
+```
+
+```bash
+# MySQL/Redis development after pdo_mysql is enabled
 cp .env.development .env
 make docker-up
-make install
-php artisan key:generate
+make doctor
 php artisan migrate
 make dev
 ```

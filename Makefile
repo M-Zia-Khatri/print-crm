@@ -2,17 +2,21 @@ SHELL := /bin/bash
 DEV_COMPOSE := docker compose --env-file .env -f docker/dev/compose.yml
 PROD_COMPOSE := docker compose --env-file .env.production -f docker/prod/compose.yml
 
-.PHONY: install setup dev stop restart logs shell clean artisan migrate migrate-fresh seed fresh optimize optimize-clear cache route-cache config-cache view-cache pnpm-install pnpm-dev pnpm-build lint format docker-up docker-down docker-build docker-rebuild docker-prune prod-build prod-up prod-down prod-restart db backup restore queue queue-restart schedule
+.PHONY: install setup doctor dev stop restart logs shell clean artisan migrate migrate-fresh seed fresh optimize optimize-clear cache route-cache config-cache view-cache pnpm-install pnpm-dev pnpm-build lint format docker-up docker-down docker-build docker-rebuild docker-prune prod-build prod-up prod-down prod-restart db backup restore queue queue-restart schedule
 
 install:
 	composer install
 	pnpm install
 
-setup: docker-up install
+setup: install
 	cp -n .env.example .env || true
+	php scripts/doctor.php
 	php artisan key:generate
 	php artisan migrate --force
 	pnpm build
+
+doctor:
+	php scripts/doctor.php
 
 dev:
 	composer run dev
@@ -29,13 +33,13 @@ clean:
 
 artisan:
 	php artisan $(filter-out $@,$(MAKECMDGOALS))
-migrate:
+migrate: doctor
 	php artisan migrate
-migrate-fresh:
+migrate-fresh: doctor
 	php artisan migrate:fresh
 seed:
 	php artisan db:seed
-fresh:
+fresh: doctor
 	php artisan migrate:fresh --seed
 optimize:
 	php artisan optimize
