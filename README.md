@@ -33,6 +33,11 @@ php artisan migrate
 make dev
 ```
 
+
+### Dev server notes
+
+`make dev` starts Laravel, the queue listener, and Vite without Laravel Pail so it works on Windows where PHP `pcntl` is not available. If your PHP runtime supports `pcntl`, `make dev-pail` runs the original Pail-enabled workflow.
+
 ## Production
 
 Production runs fully in Docker. Update `.env.production` with real secrets before deployment.

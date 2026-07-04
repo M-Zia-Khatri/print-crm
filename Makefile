@@ -2,7 +2,7 @@ SHELL := /bin/bash
 DEV_COMPOSE := docker compose --env-file .env -f docker/dev/compose.yml
 PROD_COMPOSE := docker compose --env-file .env.production -f docker/prod/compose.yml
 
-.PHONY: install setup doctor dev stop restart logs shell clean artisan migrate migrate-fresh seed fresh optimize optimize-clear cache route-cache config-cache view-cache pnpm-install pnpm-dev pnpm-build lint format docker-up docker-down docker-build docker-rebuild docker-prune prod-build prod-up prod-down prod-restart db backup restore queue queue-restart schedule
+.PHONY: install setup doctor dev dev-pail stop restart logs shell clean artisan migrate migrate-fresh seed fresh optimize optimize-clear cache route-cache config-cache view-cache pnpm-install pnpm-dev pnpm-build lint format docker-up docker-down docker-build docker-rebuild docker-prune prod-build prod-up prod-down prod-restart db backup restore queue queue-restart schedule
 
 install:
 	composer install
@@ -18,8 +18,11 @@ setup: install
 doctor:
 	php scripts/doctor.php
 
-dev:
+dev: doctor
 	composer run dev
+
+dev-pail: doctor
+	composer run dev:pail
 
 stop: docker-down
 restart: docker-down docker-up
