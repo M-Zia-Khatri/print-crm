@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Activity, Building2, CreditCard, FileText, LayoutGrid, Package, Receipt, Settings, ShieldCheck, StickyNote, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -17,24 +16,17 @@ import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+    { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+    { title: 'Customers', href: '/customers', icon: Users },
+    { title: 'Companies', href: '/companies', icon: Building2 },
+    { title: 'Products', href: '/products', icon: Package },
+    { title: 'Quotes', href: '/quotes', icon: FileText },
+    { title: 'Invoices', href: '/invoices', icon: Receipt },
+    { title: 'Payments', href: '/payments', icon: CreditCard },
+    { title: 'Tasks', href: '/tasks', icon: ShieldCheck },
+    { title: 'Notes', href: '/notes', icon: StickyNote },
+    { title: 'Activity Logs', href: '/activity-logs', icon: Activity },
+    { title: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -57,7 +49,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

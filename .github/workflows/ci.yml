@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: print_crm_testing
+          MYSQL_ROOT_PASSWORD: secret
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psecret"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: bcmath, intl, mbstring, pdo_mysql, redis, zip
+          coverage: none
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: pnpm install --frozen-lockfile=false
+      - run: cp .env.testing .env
+      - run: php artisan key:generate
+      - run: composer run lint:check
+      - run: composer run types:check
+      - run: pnpm lint:check
+      - run: pnpm types:check
+      - run: pnpm build
+      - run: php artisan test
+      - run: docker build -f docker/prod/Dockerfile -t print-crm:${{ github.sha }} .
