@@ -1,28 +1,16 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Auth } from '@/types';
 import { dashboard } from '@/routes';
-import { formatCurrency } from '@/Utils/format';
 
-type DashboardMetrics = {
-    customers: number;
-    companies: number;
-    products: number;
-    open_tasks: number;
-    invoice_total: number;
-    payments_total: number;
-    overdue_invoices: number;
+type PageProps = {
+    auth: Auth;
+    flash?: { success?: string };
 };
 
-export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
-    const cards = [
-        ['Customers', metrics.customers],
-        ['Companies', metrics.companies],
-        ['Active products', metrics.products],
-        ['Open tasks', metrics.open_tasks],
-        ['Invoice pipeline', formatCurrency(metrics.invoice_total)],
-        ['Payments received', formatCurrency(metrics.payments_total)],
-        ['Overdue invoices', metrics.overdue_invoices],
-    ];
+export default function Dashboard() {
+    const { auth, flash } = usePage<PageProps>().props;
+    const username = auth.user.username ?? auth.user.name;
 
     return (
         <>
@@ -30,19 +18,15 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div>
                     <h1 className="text-2xl font-semibold tracking-tight">CRM Dashboard</h1>
-                    <p className="text-sm text-muted-foreground">Operational overview cached in Redis for fast loading.</p>
+                    <p className="text-sm text-muted-foreground">Welcome, {username}</p>
+                    <p className="text-sm text-muted-foreground">Your role: {auth.user.role}</p>
                 </div>
+                {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{flash.success}</div>}
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    {cards.map(([label, value]) => (
-                        <Card key={label}>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{value}</div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    <Card>
+                        <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle></CardHeader>
+                        <CardContent><div className="text-2xl font-bold">Ready</div></CardContent>
+                    </Card>
                 </div>
             </div>
         </>

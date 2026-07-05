@@ -7,14 +7,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-/* @chisel-registration */
-import { register } from '@/routes';
-/* @end-chisel-registration */
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-/* @chisel-passkeys */
 import PasskeyVerify from '@/components/passkey-verify';
-/* @end-chisel-passkeys */
+import { request } from '@/routes/password';
+import { store } from '@/routes/login';
 
 type Props = {
     status?: string;
@@ -25,101 +20,59 @@ export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
-
-            {/* @chisel-passkeys */}
             <PasskeyVerify />
-            {/* @end-chisel-passkeys */}
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
+            <Form {...store.form()} resetOnSuccess={['password']} className="flex flex-col gap-6">
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
+                                <Label htmlFor="username">Username</Label>
+                                <Input id="username" type="text" name="username" required autoFocus tabIndex={1} autoComplete="username" placeholder="username" />
+                                <InputError message={errors.username} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="role">Role</Label>
+                                <select id="role" name="role" required defaultValue="admin" tabIndex={2} className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm">
+                                    <option value="super_admin">Super Admin</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="viewer">Viewer</option>
+                                </select>
+                                <InputError message={errors.role} />
                             </div>
 
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
+                                        <TextLink href={request()} className="ml-auto text-sm" tabIndex={6}>Forgot your password?</TextLink>
                                     )}
                                 </div>
-                                <PasswordInput
-                                    id="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                />
+                                <PasswordInput id="password" name="password" required tabIndex={3} autoComplete="current-password" placeholder="Password" />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
+                                <Checkbox id="remember" name="remember" tabIndex={4} />
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
+                            <Button type="submit" className="mt-4 w-full" tabIndex={5} disabled={processing} data-test="login-button">
                                 {processing && <Spinner />}
                                 Log in
                             </Button>
                         </div>
-
-                        {/* @chisel-registration */}
-                        <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Sign up
-                            </TextLink>
-                        </div>
-                        {/* @end-chisel-registration */}
                     </>
                 )}
             </Form>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </>
     );
 }
 
 Login.layout = {
     title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    description: 'Enter your username, password, and role below to log in',
 };

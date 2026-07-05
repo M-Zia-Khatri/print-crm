@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
+use App\Enums\UserRole;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -16,9 +17,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(SuperAdminSeeder::class);
+
         $admin = User::query()->firstOrCreate(
             ['email' => 'admin@example.com'],
-            ['name' => 'CRM Admin', 'password' => Hash::make('password')]
+            ['name' => 'CRM Admin', 'username' => 'admin', 'password' => Hash::make('password'), 'role' => UserRole::ADMIN]
         );
 
         $permissions = collect(['view dashboard', 'manage users', 'manage customers', 'manage invoices', 'manage settings'])

@@ -7,12 +7,17 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 /* @end-chisel-registration */
 use App\Actions\Fortify\ResetUserPassword;
+use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -43,6 +48,23 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureActions(): void
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $request->validate([
+                'username' => ['required', 'string'],
+                'password' => ['required', 'string'],
+                'role' => ['required', Rule::in(UserRole::roles())],
+            ]);
+
+            $user = User::query()->where('username', $request->string('username')->toString())->first();
+
+            if (! $user || ! Hash::check($request->string('password')->toString(), $user->password) || ! $user->role->isRole($request->string('role')->toString())) {
+                throw ValidationException::withMessages([
+                    'username' => __('auth.failed'),
+                ]);
+            }
+
+            return $user;
+        });
         /* @chisel-registration */
         Fortify::createUsersUsing(CreateNewUser::class);
         /* @end-chisel-registration */
@@ -101,7 +123,7 @@ class FortifyServiceProvider extends ServiceProvider
         /* @end-chisel-2fa */
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower($request->input('username', '')).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

@@ -24,8 +24,9 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->post(route('login.store'), [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'password',
+            'role' => $user->role->value,
         ]);
 
         $this->assertAuthenticated();
@@ -44,8 +45,9 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->withTwoFactor()->create();
 
         $response = $this->post(route('login'), [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'password',
+            'role' => $user->role->value,
         ]);
 
         $response->assertRedirect(route('two-factor.login'));
@@ -58,8 +60,9 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $this->post(route('login.store'), [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'wrong-password',
+            'role' => $user->role->value,
         ]);
 
         $this->assertGuest();
@@ -80,11 +83,12 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        RateLimiter::increment(md5('login'.implode('|', [$user->email, '127.0.0.1'])), amount: 5);
+        RateLimiter::increment(md5('login'.implode('|', [$user->username, '127.0.0.1'])), amount: 5);
 
         $response = $this->post(route('login.store'), [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'wrong-password',
+            'role' => $user->role->value,
         ]);
 
         $response->assertTooManyRequests();
