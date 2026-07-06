@@ -23,6 +23,21 @@ class StoreUserRequestTest extends TestCase
         $this->assertTrue($this->validator(['username' => str_repeat('a', 255)])->passes());
     }
 
+
+    public function test_username_is_normalized_before_validation(): void
+    {
+        $request = StoreUserRequest::create('/users', 'POST', [
+            'username' => '  Mixed_User  ',
+            'password' => 'secret123',
+            'role' => UserRole::VIEWER->value,
+        ]);
+
+        $request->setContainer($this->app);
+        $request->validateResolved();
+
+        $this->assertSame('mixed_user', $request->validated('username'));
+    }
+
     public function test_password_is_required_and_min_eight(): void
     {
         $this->assertFalse($this->validator(['password' => ''])->passes());

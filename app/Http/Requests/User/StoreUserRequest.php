@@ -13,13 +13,22 @@ class StoreUserRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('username')) {
+            $this->merge([
+                'username' => str($this->input('username'))->trim()->lower()->toString(),
+            ]);
+        }
+    }
+
     /**
      * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
-            'username' => ['required', 'string', 'lowercase', 'max:255', 'unique:users,username'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', Rule::in([UserRole::ADMIN->value, UserRole::VIEWER->value])],
         ];

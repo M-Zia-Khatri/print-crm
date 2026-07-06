@@ -12,10 +12,12 @@ class CreateUser
      */
     public function handle(array $data): User
     {
+        $username = str($data['username'])->trim()->lower()->toString();
+
         return User::query()->create([
-            'name' => $data['username'],
-            'email' => $data['username'].'@print-crm.local',
-            'username' => $data['username'],
+            'name' => $username,
+            'email' => $username.'@print-crm.local',
+            'username' => $username,
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
             'email_verified_at' => now(),

@@ -66,6 +66,14 @@ class CreateUserTest extends TestCase
         $this->actingAs($this->user(UserRole::SUPER_ADMIN))->post(route('users.store'), $payload)->assertSessionHasErrors('role');
     }
 
+
+    public function test_username_is_trimmed_and_lowercased_before_create(): void
+    {
+        $this->actingAs($this->user(UserRole::SUPER_ADMIN))->post(route('users.store'), $this->payload(['username' => '  Mixed_User  ']))->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertDatabaseHas('users', ['username' => 'mixed_user']);
+    }
+
     public function test_user_is_created_and_password_is_hashed(): void
     {
         $this->actingAs($this->user(UserRole::SUPER_ADMIN))->post(route('users.store'), $this->payload());

@@ -55,9 +55,13 @@ class FortifyServiceProvider extends ServiceProvider
                 'role' => ['required', Rule::in(UserRole::roles())],
             ]);
 
-            $user = User::query()->where('username', $request->string('username')->toString())->first();
+            $username = $request->string('username')->trim()->lower()->toString();
+            $role = $request->string('role')->toString();
+            $password = $request->string('password')->toString();
 
-            if (! $user || ! Hash::check($request->string('password')->toString(), $user->password) || ! $user->role->isRole($request->string('role')->toString())) {
+            $user = User::query()->where('username', $username)->first();
+
+            if (! $user || ! Hash::check($password, $user->password) || ! $user->role->isRole($role)) {
                 throw ValidationException::withMessages([
                     'username' => __('auth.failed'),
                 ]);
@@ -123,7 +127,7 @@ class FortifyServiceProvider extends ServiceProvider
         /* @end-chisel-2fa */
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input('username', '')).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower(trim((string) $request->input('username', ''))).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

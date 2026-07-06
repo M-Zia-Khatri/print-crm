@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BriefcaseBusiness, CircleDollarSign, LayoutGrid, Settings, UserPlus, Users } from 'lucide-react';
+import { BriefcaseBusiness, CircleDollarSign, LayoutGrid, UserPlus, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -17,7 +17,6 @@ export function AppSidebar() {
         { title: 'Worker', href: '/tasks', icon: BriefcaseBusiness },
         { title: 'Expense', href: '/payments', icon: CircleDollarSign },
         ...(auth.user.role === 'super_admin' ? [{ title: 'Add User', href: '/users/create', icon: UserPlus }] : []),
-        { title: 'Settings', href: '/settings', icon: Settings },
     ];
 
     return (

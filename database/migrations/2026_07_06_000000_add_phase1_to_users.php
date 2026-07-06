@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('username')->nullable()->unique()->after('name');
+            $table->string('username')->unique()->after('name');
             $table->enum('role', UserRole::roles())->default(UserRole::VIEWER->value)->after('password');
             $table->index('username');
         });
