@@ -1,0 +1,95 @@
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: docker/production/php/Dockerfile
+    image: print-crm-app:production
+    restart: unless-stopped
+    env_file:
+      - ../../.env.production
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app-storage:/var/www/html/storage
+      - app-cache:/var/www/html/bootstrap/cache
+
+  nginx:
+    build:
+      context: ../..
+      dockerfile: docker/production/nginx/Dockerfile
+    image: print-crm-nginx:production
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    depends_on:
+      - app
+    volumes:
+      - app-storage:/var/www/html/storage:ro
+
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-print_crm}
+      MYSQL_USER: ${DB_USERNAME:-print_crm}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes:
+      - prod-mysql-data:/var/lib/mysql
+      - ../shared/mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASSWORD:-change-me-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    volumes:
+      - prod-redis-data:/data
+      - ../shared/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  queue:
+    image: print-crm-app:production
+    restart: unless-stopped
+    command: ["supervisord", "-c", "/etc/supervisor/conf.d/queue.conf"]
+    env_file:
+      - ../../.env.production
+    depends_on:
+      app:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./supervisor/queue.conf:/etc/supervisor/conf.d/queue.conf:ro
+      - app-storage:/var/www/html/storage
+      - app-cache:/var/www/html/bootstrap/cache
+
+  scheduler:
+    image: print-crm-app:production
+    restart: unless-stopped
+    command: ["sh", "-c", "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"]
+    env_file:
+      - ../../.env.production
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - app-storage:/var/www/html/storage
+      - app-cache:/var/www/html/bootstrap/cache
+
+volumes:
+  app-storage:
+  app-cache:
+  prod-mysql-data:
+  prod-redis-data:
